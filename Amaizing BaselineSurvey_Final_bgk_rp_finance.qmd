@@ -1,0 +1,238 @@
+---
+title: "Amaizing  Baseline Survey_Final-bgk-rp_finance"
+author: "Njambi"
+format: html
+editor: visual
+---
+
+## 
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Clear the environment
+
+```{r}
+
+rm(list = ls())
+
+```
+
+## Loading necessary libraries
+
+```{r, include=FALSE}
+
+library(tidyverse) # includes the dplyr, ggplot2, tidyr, readr, stringr, forcats, tibble packages
+library(readxl)
+library(Hmisc)
+library(labelled)
+library(magrittr)
+library(datawizard)
+library(gtsummary)
+library(gt)
+library(kableExtra)
+library(flextable)
+library(splitstackshape)
+library(lubridate)
+library(foreign)
+library(haven)
+
+#library(ggplot2)
+#library(tidyr)
+#library(tibble)
+#library(dplyr)
+#library(stringr)
+
+```
+
+## Set the working directory
+
+```{r}
+# Set working directory (Not necessary since the current wd is the correct wd)
+
+setwd("C:\\Users\\awanjau\\OneDrive - CGIAR\\Alliance\\Alliance_2024\\AMAZING\\AmazingBaselineDataCleaning\\Amaizing  Baseline Survey_Final-bgk-rp_finance")
+      
+```
+
+## Loading data
+
+```{r}
+# Read a csv file
+
+amaizing_finance_path <- "C:\\Users\\awanjau\\OneDrive - CGIAR\\Alliance\\Alliance_2024\\AMAZING\\aMaizingBaseline_Files\\Amaizing  Baseline Survey_Final-bgk-rp_finance.csv"
+
+amaizing_finance <- read_csv(amaizing_finance_path)
+
+dim(amaizing_finance) # 1838    7
+
+```
+
+```{r}
+
+names(amaizing_finance)
+```
+
+```{r}
+unique(amaizing_finance$kindex2)
+
+```
+
+```{r}
+finance_levels <- c("Crop Insurance", "Non-governmental organization (NGO)",  "Formal lender (bank/financial institution/ Agricultural Finance Cooperation)", "Informal lender (e.g Shylock)", "Friends or relatives", "Group based micro-finance or lending including VSLAs / SACCOs", "Informal credit / savings groups (e.g., merry-go-rounds, funeral societies, etc.)", "Mobile loans", "Other Specify 1", "Other Specify 2", "Other Specify 3")  
+
+amaizing_finance <- amaizing_finance %>%
+  mutate(
+    kindex2 = factor(
+      kindex2, 
+      levels = c(1:8, -222, -221, -223), 
+      labels = finance_levels
+    )
+  
+  ) 
+
+```
+
+```{r}
+unique(amaizing_finance$kindex2)
+
+```
+
+```{r}
+unique(amaizing_finance$kname)
+
+```
+
+```{r}
+
+
+amaizing_finance <- amaizing_finance %>%
+  mutate(
+    kname = factor(kname )
+  )
+```
+
+```{r}
+unique(amaizing_finance$kname)
+
+```
+
+```{r}
+unique(amaizing_finance$k2)
+
+```
+
+```{r}
+kind_levels <- c("In Cash", "In Kind", "Both in Cash and Kind")  
+
+amaizing_finance <- amaizing_finance %>%
+  mutate(
+    k2 = factor(
+      k2, 
+      levels = c(1,2,3), 
+      labels = kind_levels
+    )
+  
+  ) 
+```
+
+```{r}
+unique(amaizing_finance$k2)
+
+```
+
+```{r}
+
+column_labels <- c(
+  kindex1 = "Finance repeat iteration/index", # eg repeat 1, repeat 2, etc
+  kindex2 = "Finance level/category selected",
+  kname = "Finance label/name corresponding to kindex2",
+  k2 = "In what kind did you receive kname",
+  PARENT_KEY = "Parent key",
+  KEY = "Key",
+  `SET-OF-rp_finance` = "Finance repeat group ID"
+)
+
+```
+
+```{r}
+
+# Rename columns with characters not supported by stata
+
+amaizing_finance <- amaizing_finance %>%
+  
+  rename(SET_OF_rp_finance = `SET-OF-rp_finance`
+    
+         )
+
+```
+
+```{r}
+# Set variable/column labels
+ 
+amaizing_finance <- amaizing_finance %>%
+  
+  set_variable_labels(.labels = column_labels)   # Requires package labelled
+```
+
+Using the function View() to open the new data in a spreadsheet reveals the column names and labels.
+
+```{r}
+
+# View(amaizing_finance)
+
+```
+
+## Generate a data dictionary
+
+```{r}
+# Data dictionary
+
+amaizing_finance_dict <- look_for(amaizing_finance, labels = TRUE, values = TRUE) %>%
+  dplyr::select(-c(missing, value_labels))
+
+  gt(amaizing_finance_dict)
+
+```
+
+## Export data dictionary to CSV
+
+```{r}
+
+readr::write_csv(amaizing_finance_dict, "amaizing_finance_dict.csv")
+
+```
+
+## Export data to CSV
+
+```{r}
+
+readr::write_csv(amaizing_finance, "amaizing_finance.csv")
+
+```
+
+## Save as R data
+
+```{r}
+
+save(amaizing_finance, file = "amaizing_finance.RData")
+
+#View(amaizing_finance)
+```
+
+## Export data to SPSS
+
+```{r}
+
+write.foreign(amaizing_finance, "amaizing_finance.sav", "amaizing_finance", package = "SPSS")
+
+```
+
+## Export data to STATA
+
+```{r}
+
+write_dta(amaizing_finance, "amaizing_finance.dta")
+
+```
